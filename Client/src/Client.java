@@ -42,7 +42,7 @@ public class Client implements Runnable{
         // 	        NNNN EEEE	  E - empty field
         // byte 3: |0000 0000|
 
-        byte[] byteArray = new byte[4]; // sprawdzic 3
+        byte[] byteArray = new byte[4]; // check 3
 
         byteArray[0] = (byte) ((operation & 0b00011111) << 3);
         byteArray[0] = (byte) (byteArray[0] | (byte) ((answer & 0b00001110) >> 1));
@@ -56,7 +56,7 @@ public class Client implements Runnable{
         return byteArray;
     }
 
-    // method that send packet form client to server
+    // method that sends packet form client to server
     private void sendPacket(int operation, int answer, int id, int number){
         try {
             out.write(generatePacket(operation, answer, id, number),0,4);
@@ -65,7 +65,7 @@ public class Client implements Runnable{
         }
     }
 
-    // method that decode packet received from server - binary decoding
+    // method that decodes packet received from server - binary decoding
     private void decodePacket(byte[] byteArray){
 
         int operation, answer, id, number, attempt;
@@ -93,7 +93,7 @@ public class Client implements Runnable{
         }
     }
 
-    // method that execute proper instructions on the base of fields contained in received packets
+    // method that executes proper instructions on the base of fields contained in received packets
     private void execute(int operation, int answer, int number, int attempt){
         // switch - reaction for the operation field
         // if - reaction for the answer field
@@ -102,7 +102,7 @@ public class Client implements Runnable{
             case 2:
                 if(answer == 0){
                     System.out.println("Start of the game!");
-                    System.out.println("Type odd number in: ");
+                    System.out.print("\nType in odd number: ");
                     in_game = true;
                 }
                 else if(answer == 1){
@@ -162,9 +162,14 @@ public class Client implements Runnable{
 
     public void run(){
 
+        byte[] byteArray = new byte[4];
+
+        boolean t = true;
+        boolean r = false;
+
         int number, length;
         int attempt;
-        byte[] byteArray = new byte[4];
+
         Scanner scanner = new Scanner(System.in);
 
         // loop needed to read first odd number
@@ -198,29 +203,40 @@ public class Client implements Runnable{
         // main loop
         while(condition){
 
+            System.out.print("\nType in number: ");
+
             // here we type number in
-            try {
-                if (System.in.available() > 0){
-                    System.out.println("Type number in: ");
-                    number = scanner.nextInt();
-                    sendPacket(3,0, sessionID, number);
+            while(t)
+            {
+                try {
+                    if (System.in.available() > 0){
+                        number = scanner.nextInt();
+                        sendPacket(3,0, sessionID, number);
+                        t = false;
+                        r = true;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (Throwable e) {
-                scanner.next();
             }
 
-            // here we received and decode packet
-            try {
-                if (in.available() > 0){
-                    length = in.read(byteArray);
-                    if(length == -1){
-                        condition = false;
-                    } else{
-                        decodePacket(byteArray);
+            // here we receive and decode packet
+            while(r)
+            {
+                try {
+                    if (in.available() > 0) {
+                        length = in.read(byteArray);
+                        if (length == -1) {
+                            condition = false;
+                        } else {
+                            decodePacket(byteArray);
+                            t = true;
+                            r = false;
+                        }
                     }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
 

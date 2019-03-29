@@ -42,7 +42,7 @@ public class Server {
     // method that generates starting number of attempt for both players
     // (both of them have to type in odd number, and after that number of attempts
     // is calculated - arithmetic average of this two odd numbers)
-    void numberOf_attempts(int id, int number, Client client){
+    void numberOf_attempts(int id, int number, ClientConnect clientConnect){
 
         if(id == sessionID_1){
             attempt_1 = number;
@@ -58,32 +58,32 @@ public class Server {
         }
     }
 
-    // method that checks whether client tip is correct
+    // method that checks whether clientConnect tip is correct
     // if yes - user wins
     // if no - number of attempts is decremented and game goes on
-    void check(int id, int tip, Client client)
+    void check(int id, int tip, ClientConnect clientConnect)
     {
         if(tip == random_number)
         {
-            client.sendPacket(7, 1, 0, 0); // you won
+            clientConnect.sendPacket(7, 1, 0, 0); // you won
         }
 
         else if(tip < random_number)
         {
             if(id == sessionID_1){
                 attempt_1--;
-                client.sendPacket(3,1,0,attempt_1); // try again
+                clientConnect.sendPacket(3,1,0,attempt_1); // try again
                 if(attempt_1 == 0)
                 {
-                    client.sendPacket(7,2,0,0); // you lost
+                    clientConnect.sendPacket(7,2,0,0); // you lost
                 }
             }
             else if(id == sessionID_2){
                 attempt_2--;
-                client.sendPacket(3,1,0,attempt_2); // try again
+                clientConnect.sendPacket(3,1,0,attempt_2); // try again
                 if(attempt_2 == 0)
                 {
-                    client.sendPacket(7,2,0,0); // you lost
+                    clientConnect.sendPacket(7,2,0,0); // you lost
                 }
             }
         }
@@ -92,18 +92,18 @@ public class Server {
         {
             if(id == sessionID_1){
                 attempt_1--;
-                client.sendPacket(3,4,0,attempt_1); // try again
+                clientConnect.sendPacket(3,4,0,attempt_1); // try again
                 if(attempt_1 == 0)
                 {
-                    client.sendPacket(7,2,0,0); // you lost
+                    clientConnect.sendPacket(7,2,0,0); // you lost
                 }
             }
             else if(id == sessionID_2){
                 attempt_2--;
-                client.sendPacket(3,4,0,attempt_2); // try again
+                clientConnect.sendPacket(3,4,0,attempt_2); // try again
                 if(attempt_2 == 0)
                 {
-                    client.sendPacket(7,2,0,0); // you lost
+                    clientConnect.sendPacket(7,2,0,0); // you lost
                 }
             }
         }
@@ -114,14 +114,14 @@ public class Server {
         generate_sessionID();
         generate_random_number();
 
-        Client client1 = new Client(serverSocket, sessionID_1,this);
-        Client client2 = new Client(serverSocket, sessionID_2,this);
+        ClientConnect clientConnect1 = new ClientConnect(serverSocket, sessionID_1,this);
+        ClientConnect clientConnect2 = new ClientConnect(serverSocket, sessionID_2,this);
 
-        Thread t1 = new Thread(client1);
-        Thread t2 = new Thread(client2);
+        Thread t1 = new Thread(clientConnect1);
+        Thread t2 = new Thread(clientConnect2);
 
-        client1.sendPacket(2,0,0, 0);
-        client2.sendPacket(2,0,0, 0);
+        clientConnect1.sendPacket(2,0,0, 0);
+        clientConnect2.sendPacket(2,0,0, 0);
 
         t1.start();
         t2.start();
@@ -136,8 +136,8 @@ public class Server {
         }
     }
 
-    public static void main(String[] args) {
-
+    public static void main(String[] args)
+    {
         Server server = new Server(1234);
         server.start();
     }

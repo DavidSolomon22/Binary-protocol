@@ -3,7 +3,7 @@ import java.io.DataOutputStream;
 import java.net.*;
 import java.io.IOException;
 
-public class Client implements Runnable{
+public class ClientConnect implements Runnable{
 
     private Socket clientSocket;
     private DataInputStream in;
@@ -12,8 +12,9 @@ public class Client implements Runnable{
     private int sessionID;
     private byte[] packet = new byte[4];
     private boolean condition = true;
+    private static int theEnd = 0;
 
-    Client(ServerSocket serverSocket, int clientID, Server server){
+    ClientConnect(ServerSocket serverSocket, int clientID, Server server){
         try {
             clientSocket = serverSocket.accept();
 
@@ -64,7 +65,7 @@ public class Client implements Runnable{
         return byteArray;
     }
 
-    // method that send packet form server to client
+    // method that sends packet form server to client
     void sendPacket(int operation, int answer, int number, int attempt){
         try {
             out.write(generatePacket(operation, answer, number, attempt),0,4);
@@ -75,7 +76,13 @@ public class Client implements Runnable{
 
     // method that ends connection
     private void end(){
-        try {
+        try
+        {
+            theEnd++;
+            if(theEnd == 2)
+            {
+                System.out.println("End of the connection.");
+            }
             clientSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -84,7 +91,7 @@ public class Client implements Runnable{
         }
     }
 
-    // method that execute proper instructions on the base of fields contained in received packets
+    // method that executes proper instructions on the base of fields contained in received packets
     private void execute(int operation, int answer, int id, int number)
     {
         if(operation == 2 && answer == 2) // generate number of attempts
@@ -97,12 +104,12 @@ public class Client implements Runnable{
         }
         else if(operation == 7 && answer == 7) // end connection
         {
-            System.out.println("Client with ID "+ sessionID + " is disconnected.");
+            System.out.println("ClientConnect with ID "+ sessionID + " is disconnected.");
             end();
         }
     }
 
-    // method that decode packet received from client - binary decoding
+    // method that decodes packet received from client - binary decoding
     private void decodePacket(byte[] byteArray){
 
         int operation, answer, id, number;
@@ -127,8 +134,8 @@ public class Client implements Runnable{
         while(condition){
             try {
                 length = in.read(packet);
-                if (length == -1){
-                    System.out.println("Client with ID " + sessionID + " is disconnected.");
+                if (length == -1)
+                {
                     condition = false;
                     break;
                 } else {
